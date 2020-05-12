@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/bouzeboudja/workspace/5AL/ML/projet/ML_5AL_lib_cpp_project_groupe_3/library.cpp
+library.h
+/home/bouzeboudja/workspace/5AL/ML/projet/ML_5AL_lib_cpp_project_groupe_3/library.h
+iostream
+-
+cstdlib
+-
+random
+-
+
+/home/bouzeboudja/workspace/5AL/ML/projet/ML_5AL_lib_cpp_project_groupe_3/library.h
+
