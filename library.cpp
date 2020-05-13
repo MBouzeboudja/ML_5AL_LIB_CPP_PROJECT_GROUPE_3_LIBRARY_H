@@ -12,7 +12,7 @@ INTERFACE_EXPORT int hello(int x){
 }
 
 INTERFACE_EXPORT double *create_linear_model(int input_size){
-    auto model = new double[input_size];
+    auto model = new double[input_size + 1];
     std::random_device seeder;
     std::mt19937 engine(seeder());
     std::uniform_real_distribution<double> distribution(-1.0, 1.0);
