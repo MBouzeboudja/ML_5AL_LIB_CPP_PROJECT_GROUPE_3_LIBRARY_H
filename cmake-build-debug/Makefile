@@ -111,19 +111,6 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named main
-
-# Build rule for target.
-main: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 main
-.PHONY : main
-
-# fast build rule for target.
-main/fast:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
-.PHONY : main/fast
-
-#=============================================================================
 # Target rules for targets named ML_5AL_lib_cpp_project_groupe_3
 
 # Build rule for target.
@@ -142,7 +129,6 @@ library.o: library.cpp.o
 
 # target to build an object file
 library.cpp.o:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/library.cpp.o
 	$(MAKE) -f CMakeFiles/ML_5AL_lib_cpp_project_groupe_3.dir/build.make CMakeFiles/ML_5AL_lib_cpp_project_groupe_3.dir/library.cpp.o
 .PHONY : library.cpp.o
 
@@ -152,7 +138,6 @@ library.i: library.cpp.i
 
 # target to preprocess a source file
 library.cpp.i:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/library.cpp.i
 	$(MAKE) -f CMakeFiles/ML_5AL_lib_cpp_project_groupe_3.dir/build.make CMakeFiles/ML_5AL_lib_cpp_project_groupe_3.dir/library.cpp.i
 .PHONY : library.cpp.i
 
@@ -162,36 +147,8 @@ library.s: library.cpp.s
 
 # target to generate assembly for a file
 library.cpp.s:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/library.cpp.s
 	$(MAKE) -f CMakeFiles/ML_5AL_lib_cpp_project_groupe_3.dir/build.make CMakeFiles/ML_5AL_lib_cpp_project_groupe_3.dir/library.cpp.s
 .PHONY : library.cpp.s
-
-main.o: main.cpp.o
-
-.PHONY : main.o
-
-# target to build an object file
-main.cpp.o:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.o
-.PHONY : main.cpp.o
-
-main.i: main.cpp.i
-
-.PHONY : main.i
-
-# target to preprocess a source file
-main.cpp.i:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.i
-.PHONY : main.cpp.i
-
-main.s: main.cpp.s
-
-.PHONY : main.s
-
-# target to generate assembly for a file
-main.cpp.s:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.s
-.PHONY : main.cpp.s
 
 utils.o: utils.cpp.o
 
@@ -199,7 +156,7 @@ utils.o: utils.cpp.o
 
 # target to build an object file
 utils.cpp.o:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/utils.cpp.o
+	$(MAKE) -f CMakeFiles/ML_5AL_lib_cpp_project_groupe_3.dir/build.make CMakeFiles/ML_5AL_lib_cpp_project_groupe_3.dir/utils.cpp.o
 .PHONY : utils.cpp.o
 
 utils.i: utils.cpp.i
@@ -208,7 +165,7 @@ utils.i: utils.cpp.i
 
 # target to preprocess a source file
 utils.cpp.i:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/utils.cpp.i
+	$(MAKE) -f CMakeFiles/ML_5AL_lib_cpp_project_groupe_3.dir/build.make CMakeFiles/ML_5AL_lib_cpp_project_groupe_3.dir/utils.cpp.i
 .PHONY : utils.cpp.i
 
 utils.s: utils.cpp.s
@@ -217,7 +174,7 @@ utils.s: utils.cpp.s
 
 # target to generate assembly for a file
 utils.cpp.s:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/utils.cpp.s
+	$(MAKE) -f CMakeFiles/ML_5AL_lib_cpp_project_groupe_3.dir/build.make CMakeFiles/ML_5AL_lib_cpp_project_groupe_3.dir/utils.cpp.s
 .PHONY : utils.cpp.s
 
 # Help Target
@@ -228,14 +185,10 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... main"
 	@echo "... ML_5AL_lib_cpp_project_groupe_3"
 	@echo "... library.o"
 	@echo "... library.i"
 	@echo "... library.s"
-	@echo "... main.o"
-	@echo "... main.i"
-	@echo "... main.s"
 	@echo "... utils.o"
 	@echo "... utils.i"
 	@echo "... utils.s"

@@ -4,26 +4,33 @@
 #include "Eigen"
 #include "utils.h"
 
-INTERFACE_EXPORT double *create_linear_model(int input_dim){
-    auto model = new double[input_dim];
+extern "C" {
+
+INTERFACE_EXPORT int hello(int x){
+    return x;
+    std::cout<<"Hello!!!!!!";
+}
+
+INTERFACE_EXPORT double *create_linear_model(int input_size){
+    auto model = new double[input_size];
     std::random_device seeder;
     std::mt19937 engine(seeder());
     std::uniform_real_distribution<double> distribution(-1.0, 1.0);
-    for (int i = 0; i < input_dim + 1; i++) {
+    for (int i = 0; i < input_size + 1; i++) {
         model[i] = distribution(engine);
     }
     return model;
 }
 
-INTERFACE_EXPORT int train_regression_linear_model(
+INTERFACE_EXPORT int linear_model_train_regression(
         double *model,
         double *x_train,
         double *y_train,
         int x_train_len,
         int y_train_len,
-        int input_dim) {
+        int input_size) {
 
-    Eigen::MatrixXd X = fill_X(x_train, x_train_len, input_dim);
+    Eigen::MatrixXd X = fill_X(x_train, x_train_len, input_size);
     std::cout << "Matrix X\n";
     std::cout << X;
     Eigen::VectorXd Y = fill_Y(y_train, y_train_len);
@@ -33,16 +40,17 @@ INTERFACE_EXPORT int train_regression_linear_model(
     Eigen::MatrixXd W = ((X.transpose() * X).inverse() * X.transpose()) * Y;
     std::cout << "\nVector Y\n";
     std::cout << W;
-    for (int i = 0; i < input_dim + 1; i++) {
+    for (int i = 0; i < input_size + 1; i++) {
         model[i] = W(i, 0);
     }
     return 0;
 }
 
-INTERFACE_EXPORT double predict_regression_linear_model(
+INTERFACE_EXPORT double linear_model_predict_regression(
         const double *model,
         const double *input,
         int input_size) {
+
     double result = 0.0;
 
     for (int i = 0; i < input_size + 1; i++) {
@@ -76,7 +84,7 @@ INTERFACE_EXPORT int linear_model_train_classification(
     VectorXd Y = fill_Y(y_train, y_train_len);
     std::cout << "\nVector Y\n";
     std::cout << Y;
-    auto *intermediate_input = static_cast<double *>(malloc(sizeof(double) * input_size));
+    auto *intermediate_input = new double(input_size);
 
     std::random_device seeder;
     std::mt19937 engine(seeder());
@@ -104,5 +112,6 @@ INTERFACE_EXPORT double linear_model_predict_classification(
         double *model,
         double *input,
         int input_size) {
-    return sign_of_double(predict_regression_linear_model(model, input, input_size));
+    return sign_of_double(linear_model_predict_regression(model, input, input_size));
+}
 }
