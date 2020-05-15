@@ -1,13 +1,50 @@
-#ifdef __linux__
-#define INTERFACE_EXPORT
-#elif _WIN32
+#pragma once
+
+#include <iostream>
+#include <random>
+#include "utils.h"
+#include "Eigen/Eigen"
+
 #define INTERFACE_EXPORT __declspec(dllexport)
-#endif
 
 
 extern "C" {
+typedef struct NeuralNet {
+    int nb_layers;
+    int *layers_struct;
+    double **inputsCache;
+    double **delta;
+    double ***weights;
+} NeuralNet;
 
 INTERFACE_EXPORT int hello(int x);
+
+void calculate_values(NeuralNet *model, double *inputs, bool regression);
+
+INTERFACE_EXPORT NeuralNet *create_neural_net(int *structure, int nb_layers);
+INTERFACE_EXPORT double *neural_net_predict_regression(NeuralNet *model, double *inputs);
+INTERFACE_EXPORT double *neural_net_predict_classification(NeuralNet *model, double *inputs);
+void train_neural_net(
+        NeuralNet *model,
+        double *dataset_in,
+        int dataset_cnt,
+        int params_cnt,
+        double *dataset_expect,
+        int output_cnt,
+        int it_cnt,
+        double a,
+        bool regression
+);
+INTERFACE_EXPORT void neural_net_model_train_classification(
+        NeuralNet *model,
+        double *dataset_in,
+        int dataset_cnt,
+        int params_cnt,
+        double *dataset_expect,
+        int output_cnt,
+        int it_cnt,
+        double a
+);
 
 INTERFACE_EXPORT double *create_linear_model(int input_size);
 
