@@ -75,5 +75,38 @@ INTERFACE_EXPORT double linear_model_predict_classification(
         double *model,
         double *input,
         int input_size);
+
+INTERFACE_EXPORT double *k_means(
+        double *data,
+        int data_size,
+        int line_size,
+        int nbr_cluster,
+        int iteration_number);
+
+INTERFACE_EXPORT int linear_model_train_classification_RBF(
+        double *model,
+        double alpha,
+        int epoch,
+        double *x_train,
+        double *y_train,
+        int x_train_len,
+        int y_train_len,
+        int input_size,
+        int nbr_cluster,
+        int k_means_iterations,
+        double gamma);
+
+INTERFACE_EXPORT int linear_model_train_regression_RBF(
+        double *model,
+        double *x_train,
+        double *y_train,
+        int x_train_len,
+        int y_train_len,
+        int input_size,
+        int nbr_cluster,
+        int k_means_iterations,
+        double gamma);
 }
+
+
 

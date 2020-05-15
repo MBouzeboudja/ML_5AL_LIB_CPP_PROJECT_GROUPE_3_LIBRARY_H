@@ -57,123 +57,6 @@ void calculate_values(NeuralNet *model, double *inputs, bool regression) {
     }
 }
 
-double *export_values(NeuralNet *model) {
-    int lastLayerIndex = model->nb_layers - 1;
-
-    auto res = new double[model->layers_struct[lastLayerIndex]];
-    for (auto j = 1; j < model->layers_struct[lastLayerIndex] + 1; ++j) {
-        res[j - 1] = model->inputsCache[lastLayerIndex][j];
-    }
-
-    return res;
-}
-
-INTERFACE_EXPORT double *neural_net_predict_regression(NeuralNet *model, double *inputs) {
-    calculate_values(model, inputs, true);
-
-    return export_values(model);
-}
-
-INTERFACE_EXPORT double *neural_net_predict_classification(NeuralNet *model, double *inputs) {
-    calculate_values(model, inputs, false);
-
-    return export_values(model);
-}
-
-INTERFACE_EXPORT void neural_net_model_train_regression(
-        NeuralNet *model,
-        double *dataset_in,
-        int dataset_cnt,
-        int params_cnt,
-        double *dataset_expect,
-        int output_cnt,
-        int it_cnt,
-        double a
-) {
-    train_neural_net(
-            model, dataset_in, dataset_cnt, params_cnt,
-            dataset_expect, output_cnt, it_cnt,
-            a, true
-    );
-}
-
-INTERFACE_EXPORT void neural_net_model_train_classification(
-        NeuralNet *model,
-        double *dataset_in,
-        int dataset_cnt,
-        int params_cnt,
-        double *dataset_expect,
-        int output_cnt,
-        int it_cnt,
-        double a
-) {
-    train_neural_net(
-            model, dataset_in, dataset_cnt, params_cnt,
-            dataset_expect, output_cnt, it_cnt,
-            a, false
-    );
-}
-
-void train_neural_net(
-        NeuralNet *model,
-        double *dataset_in,
-        int dataset_cnt,
-        int params_cnt,
-        double *dataset_expect,
-        int output_cnt,
-        int it_cnt,
-        double a,
-        bool regression
-) {
-    std::random_device seeder;
-    std::mt19937 engine(seeder());
-    std::uniform_int_distribution<int> distribution(0, dataset_cnt - 1);
-    int lastL = model->nb_layers - 1;
-
-    for (int it = 0; it < it_cnt; ++it) {
-        int sample = distribution(engine);
-        auto sample_inputs = dataset_in + sample * params_cnt;
-        auto sample_expect = dataset_expect + sample * output_cnt;
-
-        calculate_values(model, sample_inputs, regression);
-
-        // last layer deltas
-        if (regression) {
-            for (auto j = 1; j < model->layers_struct[lastL] + 1; ++j) {
-                model->delta[lastL][j] = model->inputsCache[lastL][j] - sample_expect[j];
-            }
-        } else {
-            for (auto j = 1; j < model->layers_struct[lastL] + 1; ++j) {
-                model->delta[lastL][j] = (1 - pow(model->inputsCache[lastL][j], 2)) *
-                                         (model->inputsCache[lastL][j] - sample_expect[j]);
-            }
-        }
-
-        //hidden layers deltas
-        for (auto l = lastL; l >= 2; --l) {
-            for (auto i = 1; i < model->layers_struct[l - 1] + 1; ++i) {
-                double cnt = 0.0;
-                for (int j = 1; j < model->layers_struct[l] + 1; ++j) {
-                    cnt += model->weights[l][i][j] * model->delta[l][j];
-                }
-                model->delta[l - 1][i] = (1 - pow(model->inputsCache[l - 1][i], 2)) * cnt;
-            }
-        }
-
-        //weights update
-        for (auto l = 1; l <= lastL; ++l) {
-            for (auto i = 0; i < model->layers_struct[l - 1] + 1; ++i) {
-                for (int j = 1; j < model->layers_struct[l] + 1; ++j) {
-                    model->weights[l][i][j] += -1 * a * model->inputsCache[l - 1][j] * model->delta[l][j];
-                }
-            }
-        }
-    }
-}
-
-
-//================ LINEAR =================
-
 INTERFACE_EXPORT double *create_linear_model(int input_size) {
     auto model = new double[input_size + 1];
 
@@ -268,8 +151,139 @@ INTERFACE_EXPORT int linear_model_train_classification(
 INTERFACE_EXPORT double linear_model_predict_classification(
         double *model,
         double *input,
-        int input_size
-) {
+        int input_size) {
     return sign_of_double(linear_model_predict_regression(model, input, input_size));
 }
+
+// ####### K-means ####### ////
+
+double distance_pow_2(double x1, double z1, double x2, double z2){
+    double x = x2 - x1;
+    double z = z2 - z1;
+    return x*x + z*z;
+}
+
+INTERFACE_EXPORT double *k_means(
+        double *data,
+        int data_size,
+        int line_size,
+        int nbr_cluster,
+        int iteration_number){
+
+    int data_set_line_number = (data_size / line_size);
+
+    auto cluster_means = new double [nbr_cluster * line_size];
+    auto cluster_points_count = new int [nbr_cluster];
+    auto cluster_centroids = new double [nbr_cluster * line_size];
+
+    std::random_device seeder;
+    std::mt19937 engine(seeder());
+    std::uniform_int_distribution<int> index(0, data_set_line_number - 1);
+
+    //Initial centroids are taken from data set.
+    for(auto i=0; i < nbr_cluster; i++){
+        int random_index = index(engine);
+        cluster_centroids[i * line_size] = data[random_index];
+        cluster_centroids[i * line_size +1] = data[random_index + 1];
+    }
+
+    std::cout<<"Initial centroids: "<<std::endl;
+    for (int i = 0; i < nbr_cluster; ++i) {
+        std::cout<<"["<<cluster_centroids[i * line_size] <<"; ";
+        std::cout<<cluster_centroids[i * line_size + 1] <<"]";
+    }
+    std::cout<< std::endl;
+
+    auto cluster_of_each_point = new int[data_set_line_number];
+    for(int iteration=0; iteration<iteration_number; iteration++){
+        for(int i=0; i<data_set_line_number; i++){
+            auto dist_min = std::numeric_limits<double>::max();
+            for(int j=0; j<nbr_cluster; j++){
+                double dist = distance_pow_2(data[i * line_size], data[i * line_size + 1],
+                                                cluster_centroids[j * line_size],cluster_centroids[j * line_size + 1]);
+                if (dist_min > dist){
+                    dist_min = dist;
+                    cluster_of_each_point[i] = j;
+                }
+            }
+        }
+
+        for(int i=0; i < data_set_line_number; i++){
+            cluster_means[cluster_of_each_point[i] * line_size] += data[line_size * i];
+            cluster_means[cluster_of_each_point[i] * line_size + 1] += data[line_size * i + 1];
+            cluster_points_count[cluster_of_each_point[i]] += 1;
+        }
+
+        for(int i = 0; i < nbr_cluster; i ++){
+            const int count = std::max(1, cluster_points_count[i]);
+            cluster_centroids[i * line_size] = cluster_means[i* line_size] / count;
+            cluster_centroids[i * line_size +1] = cluster_means[i * line_size +1] / count;
+        }
+    }
+
+    free(cluster_means);
+    free(cluster_of_each_point);
+    free(cluster_points_count);
+
+    return cluster_centroids;
+}
+
+INTERFACE_EXPORT int linear_model_train_classification_RBF(
+        double *model,
+        double alpha,
+        int epoch,
+        double *x_train,
+        double *y_train,
+        int x_train_len,
+        int y_train_len,
+        int input_size,
+        int nbr_cluster,
+        int k_means_iterations,
+        double gamma){
+    auto centroids  = k_means(x_train, x_train_len, input_size, nbr_cluster,k_means_iterations);
+    return 0;
+}
+
+INTERFACE_EXPORT int linear_model_train_regression_RBF(
+        double *model,
+        double *x_train,
+        double *y_train,
+        int x_train_len,
+        int y_train_len,
+        int input_size,
+        int nbr_cluster,
+        int k_means_iterations,
+        double gamma){
+    auto centroids  = k_means(x_train, x_train_len, input_size, nbr_cluster, k_means_iterations);
+    int x_train_lines_size =  x_train_len/input_size;
+    int phi_size = nbr_cluster * x_train_lines_size;
+    auto phi = new double [phi_size];
+    for(int i=0; i < x_train_len/input_size; i++){
+        for(int j = 0; j < nbr_cluster; j++){
+            phi[i * nbr_cluster + j] = exp(-gamma * distance_pow_2(
+                    x_train[i * input_size], x_train[i * input_size + 1],centroids[j * input_size], centroids[j * input_size +1]));
+        }
+    }
+
+    return linear_model_train_regression(model, phi, y_train, phi_size, y_train_len, nbr_cluster);
+}
+
+INTERFACE_EXPORT double linear_model_predict_regression_RBF(
+        const double *model,
+        const double *input,
+        int input_size,
+        int nbr_cluster) {
+
+    double result = 0.0;
+    for (int i = 0; i < input_size + 1; i++) {
+        if (i == 0) {
+            result += 1 * model[i];
+        } else {
+            result += input[i - 1] * model[i];
+        }
+    }
+
+    return result;
+}
+
 }
